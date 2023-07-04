@@ -27,6 +27,16 @@ public class SIPData {
 
     }
 
+    public SIPData(String sipActivityDate, String investment, String rate, String time, String totalInvestment, String totalReturn, String returnAmount) {
+        this.sipActivityDate = sipActivityDate;
+        this.sipInvestment = investment;
+        this.sipRate = rate;
+        this.sipTime = time;
+        this.sipTotalInvestment = totalInvestment;
+        this.sipTotalReturn = totalReturn;
+        this.sipReturnAmount = returnAmount;
+    }
+
     public int getSipId() {
         return sipId;
     }

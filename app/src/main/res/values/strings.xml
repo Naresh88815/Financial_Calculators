@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">SIPCalculator</string>
     <string name="investment_per_month_in_rs">Investment Per Month (In Rs.)</string>
-    <string name="rate_of_return">Rate of return(%)</string>
-    <string name="time_interval_in_years">Time interval(In years)</string>
     <string name="calculate">Calculate</string>
     <string name="total_investment">Total Investment:</string>
     <string name="total_return">Total Return:</string>

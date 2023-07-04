@@ -5,10 +5,10 @@ import android.text.Spanned;
 
 public class ValueLimitFilter implements InputFilter {
 
-    private int minValue;
-    private int maxValue;
+    private float minValue;
+    private float maxValue;
 
-    public ValueLimitFilter(int minValue, int maxValue) {
+    public ValueLimitFilter(float minValue, float maxValue) {
         this.minValue = minValue;
         this.maxValue = maxValue;
     }
@@ -17,10 +17,10 @@ public class ValueLimitFilter implements InputFilter {
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
         try {
             // Get the new value by combining the existing text with the newly entered text
-            String newValue = dest.subSequence(0, dstart).toString() + source.subSequence(start, end).toString() + dest.subSequence(dend, dest.length()).toString();
+            String newValue = dest.subSequence(0, dstart) + source.subSequence(start, end).toString() + dest.subSequence(dend, dest.length());
 
             // Parse the new value
-            Float input = Float.parseFloat(newValue);
+            float input = Float.parseFloat(newValue);
 
             // Check if the new value is within the specified limits
             if (input < minValue || input > maxValue) {

@@ -1,45 +1,103 @@
 package com.application.sipcalculator;
 
+import android.database.Cursor;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class HistoryLoan extends Fragment {
-    private TextView loanActivityDate, loanAmount, loanRate, loanTime, loanEMI, loanInterestPayable, loanTotalAmount;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Locale;
 
-    View view;
+public class HistoryLoan extends AppCompatActivity {
+    ArrayList<String>  loanActivityDate, loanAmount, loanRate, loanTime, loanEMI, loanInterestPayable, loanTotalAmount;
+    RecyclerView recyclerView;
+    DBHandler dbHandler;
+    HistoryLoanAdapter historyAdapter;
+
+    AppCompatButton clrLoanBtn;
+
+    TextView noHistory;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState){
-        view= inflater.inflate(R.layout.history_sip, container, false);
-        initView();
-        setLoanValues();
-        return  view;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.history_loan);
+        dbHandler= new DBHandler(this);
+
+        noHistory=findViewById(R.id.noHistory);
+        noHistory.setVisibility(View.INVISIBLE);
+
+
+        loanActivityDate= new ArrayList<>();
+        loanAmount=new ArrayList<>();
+        loanRate=new ArrayList<>();
+        loanTime=new ArrayList<>();
+        loanEMI=new ArrayList<>();
+        loanInterestPayable=new ArrayList<>();
+        loanTotalAmount=new ArrayList<>();
+        recyclerView=findViewById(R.id.loanHistoryList);
+        historyAdapter=new HistoryLoanAdapter(this,loanActivityDate, loanAmount, loanRate,loanTime, loanEMI, loanInterestPayable,loanTotalAmount);
+        recyclerView.setAdapter(historyAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        display();
+
+        clrLoanBtn=findViewById(R.id.clear_loan);
+        clrLoanBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbHandler.clearLoanHistory();
+                recyclerView.setVisibility(View.GONE);
+                noHistory.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
-    public  void initView(){
-        loanActivityDate=view.findViewById(R.id.loanActivityDate);
-        loanAmount=view.findViewById(R.id.loanAmount);
-        loanRate=view.findViewById(R.id.loanRate);
-        loanTime=view.findViewById(R.id.loanTime);
-        loanEMI=view.findViewById(R.id.loanEMI);
-        loanInterestPayable=view.findViewById(R.id.loanInterestPayable);
-        loanTotalAmount=view.findViewById(R.id.loanTotalAmount);
-    }
-    public void setLoanValues(){
-        DBHandler dbHandler = new DBHandler(getContext());
-        loanActivityDate.setText(dbHandler.sipActivityDate);
-        loanAmount.setText(dbHandler.loanAmount);
-        loanRate.setText(dbHandler.loanRate);
-        loanTime.setText(dbHandler.loanTime);
-        loanEMI.setText(dbHandler.loanEMI);
-        loanInterestPayable.setText(dbHandler.loanInterestPayable);
-        loanTotalAmount.setText(dbHandler.loanTotalAmount);
+    public void display(){
+        dbHandler.fetchLoanData();
+        Cursor cursor= dbHandler.cursor;
+        if (cursor.getCount()==0){
+            noHistory.setVisibility(View.VISIBLE);
+        }
+        else {
+            while (cursor.moveToNext()) {
+                int loanAmt=cursor.getInt(cursor.getColumnIndex(Params.KEY_LOAN_ACTIVITY_DATE));
+                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
+                DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
+                decimalFormat.applyPattern("#,##,###");
+                String formattedLoanAmt = decimalFormat.format(loanAmt);
 
+                int emi=cursor.getInt(cursor.getColumnIndex(Params.KEY_EMI));
+                String formattedEmi=decimalFormat.format(emi);
+
+                int interestPayable= cursor.getInt(cursor.getColumnIndex(Params.KEY_INTEREST_PAYABLE));
+                String formattedInterestPayable=decimalFormat.format(interestPayable);
+
+                int totalLoan=cursor.getInt(cursor.getColumnIndex(Params.KEY_LOAN_TOTAL_AMOUNT));
+                String formattedTotalLoan=decimalFormat.format(totalLoan);
+
+
+
+                loanActivityDate.add(cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_ACTIVITY_DATE)));
+                loanAmount.add(formattedLoanAmt);
+                loanRate.add(cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_RATE)));
+                loanTime.add(cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_TIME)));
+                loanEMI.add(formattedEmi);
+                loanInterestPayable.add(formattedInterestPayable);
+                loanTotalAmount.add(formattedTotalLoan);
+
+//                Log.d("db", "Successfully extracted");
+            }
+        }
+
+        cursor.close();
+        dbHandler.db.close();
     }
 }

@@ -7,27 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBHandler extends SQLiteOpenHelper {
 
-    int sipId ;
-    String sipActivityDate;
-    String investment;
-    String rate;
-    String time ;
-    String totalInvestment;
-    String totalReturn ;
-    String returnAmount;
+    Cursor sipCursor, cursor;
+    SQLiteDatabase db;
 
-    int loanId;
-    String loanActivityDate;
-    String loanAmount;
-    String loanRate;
-    String loanTime;
-    String loanEMI;
-    String loanInterestPayable;
-    String loanTotalAmount;
     public DBHandler(Context context) {
         super(context, Params.DB_NAME, null, Params.DB_VERSION);
     }
@@ -60,6 +47,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.execSQL(create_sip);
         db.execSQL(create_loan);
 
+
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -80,7 +68,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(Params.KEY_TOTAL_RETURN, sipData.getSipTotalReturn());
         values.put(Params.KEY_RETURN_AMOUNT, sipData.getSipReturnAmount());
         db.insert(Params.SIP_TABLE_NAME, null, values);
-        Log.d("db", "Successfully insert");
+        Log.d("db", "Successfully inserted");
         db.close();
     }
 
@@ -102,67 +90,25 @@ public class DBHandler extends SQLiteOpenHelper {
 
     public void fetchSIPData(){
         String selectSIPQuery = "SELECT * FROM " + Params.SIP_TABLE_NAME;
-
-        // Execute the query using your preferred database framework or API
-        // For example, using SQLiteOpenHelper in Android:
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectSIPQuery, null);
-
-        // Iterate through the cursor to access the fetched data
-        if (cursor.moveToFirst()) {
-            do {
-                // Retrieve column values using column indexes or column names
-                sipId = cursor.getInt(cursor.getColumnIndex(Params.KEY_SIP_ID));
-                sipActivityDate = cursor.getString(cursor.getColumnIndex(Params.KEY_SIP_ACTIVITY_DATE));
-                investment = cursor.getString(cursor.getColumnIndex(Params.KEY_INVESTMENT));
-                rate = cursor.getString(cursor.getColumnIndex(Params.KEY_RATE));
-                time = cursor.getString(cursor.getColumnIndex(Params.KEY_TIME));
-                totalInvestment = cursor.getString(cursor.getColumnIndex(Params.KEY_TOTAL_INVESTMENT));
-                totalReturn = cursor.getString(cursor.getColumnIndex(Params.KEY_TOTAL_RETURN));
-                returnAmount = cursor.getString(cursor.getColumnIndex(Params.KEY_RETURN_AMOUNT));
-
-                // Use the retrieved values as needed
-                // ...
-
-            } while (cursor.moveToNext());
-        }
-
-        // Close the cursor and database connection when finished
-        cursor.close();
-        db.close();
+        db = this.getReadableDatabase();
+        sipCursor = db.rawQuery(selectSIPQuery, null);
     }
-    public void fetchLoanData(){
-        String selectLoanQuery = "SELECT * FROM " + Params.LOAN_TABLE_NAME;
 
-        // Execute the query using your preferred database framework or API
-        // For example, using SQLiteOpenHelper in Android:
+    public void fetchLoanData() {
+        String selectLoanQuery = "SELECT * FROM " +  Params.LOAN_TABLE_NAME;
+        db = this.getReadableDatabase();
+        cursor = db.rawQuery(selectLoanQuery, null);
+    }
+    public void clearSIPHistory(){
+        String clearSIPQuery="DELETE FROM "+ Params.SIP_TABLE_NAME;
+        db=this.getWritableDatabase();
+        db.execSQL(clearSIPQuery);
+    }
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectLoanQuery, null);
-
-        // Iterate through the cursor to access the fetched data
-        if (cursor.moveToNext()) {
-            do {
-                // Retrieve column values using column indexes or column names
-                loanId = cursor.getInt(cursor.getColumnIndex(Params.KEY_LOAN_ID));
-                loanActivityDate = cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_ACTIVITY_DATE));
-                loanAmount = cursor.getString(cursor.getColumnIndex(Params.KEY_lOAN_AMOUNT));
-                loanRate = cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_RATE));
-                loanTime = cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_TIME));
-                loanEMI = cursor.getString(cursor.getColumnIndex(Params.KEY_EMI));
-                loanInterestPayable = cursor.getString(cursor.getColumnIndex(Params.KEY_INTEREST_PAYABLE));
-                loanTotalAmount = cursor.getString(cursor.getColumnIndex(Params.KEY_LOAN_TOTAL_AMOUNT));
-
-                // Use the retrieved values as needed
-                // ...
-
-            } while (cursor.moveToNext());
-        }
-
-        // Close the cursor and database connection when finished
-        cursor.close();
-        db.close();
+    public void clearLoanHistory(){
+        String clearLoanQuery="DELETE FROM "+ Params.LOAN_TABLE_NAME;
+        db=this.getWritableDatabase();
+        db.execSQL(clearLoanQuery);
     }
 }
 

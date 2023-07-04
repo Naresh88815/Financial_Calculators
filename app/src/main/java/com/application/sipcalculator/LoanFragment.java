@@ -1,9 +1,12 @@
 package com.application.sipcalculator;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.utils.widget.ImageFilterButton;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -25,30 +29,34 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.slider.Slider;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class LoanFragment extends Fragment {
     private TextView emiValue, totalInterestValue,totalAmountValue;
     private EditText loanEdit, interestRateEdit, loanTimeEdit;
     private Slider loanSlider, interestRateSlider, loanTimeSlider;
-    Button loanCalculateBtn, loanHistoryBtn;
+    Button loanCalculateBtn;
+    ImageFilterButton loanHistoryBtn;
 
     private CardView loanOutput;
-    long roundedEMIResult=0;
+    int roundedEMIResult=0;
 
     double totalAmt;
 
-    long roundedTotalAmt=0;
+    int roundedTotalAmt=0;
 
     String formattedInterestAmount="0.0";
 
-    long roundedInterestResult=0;
+    int roundedInterestResult=0;
 
     double interestAmount=0;
 
-    double loan;
+    int loan;
 
     View view;
 
@@ -145,7 +153,9 @@ public class LoanFragment extends Fragment {
         interestRateSlider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                interestRateEdit.setText(String.valueOf(value));
+                DecimalFormat df = new DecimalFormat("#.##");
+                String formattedValue = df.format(value);
+                interestRateEdit.setText(formattedValue);
             }
         });
 
@@ -201,7 +211,7 @@ public class LoanFragment extends Fragment {
         });
 
 
-
+        interestRateEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         interestRateEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -290,7 +300,7 @@ public class LoanFragment extends Fragment {
                 if (input1!=null && !input1.isEmpty() && input2!=null && !input2.isEmpty() && input3!=null && !input3.isEmpty() ) {
 
                     try {
-                        loan = Double.parseDouble(loanEdit.getText().toString());
+                        loan = Integer.parseInt(loanEdit.getText().toString());
                         double interestRate = Double.parseDouble(interestRateEdit.getText().toString());
                         int numberOfInstallments = Integer.parseInt(loanTimeEdit.getText().toString());
 
@@ -306,7 +316,7 @@ public class LoanFragment extends Fragment {
                         double emiRoundedValue = Double.parseDouble(emiFormattedResult);
 
                         // Round off the roundedValue to the nearest whole number
-                        roundedEMIResult = Math.round(emiRoundedValue);
+                        roundedEMIResult = (int) Math.round(emiRoundedValue);
 
                         totalAmt = emi * numberOfInstallments;
                         interestAmount=totalAmt-loan;
@@ -315,26 +325,42 @@ public class LoanFragment extends Fragment {
                         formattedInterestAmount=tdf.format(interestAmount);
 
                         double interestRoundedValue = Double.parseDouble(formattedInterestAmount);
-                        roundedInterestResult=Math.round(interestRoundedValue);
+                        roundedInterestResult= (int) Math.round(interestRoundedValue);
 
-                        roundedTotalAmt=Math.round(totalAmt);
+                        roundedTotalAmt= (int) Math.round(totalAmt);
 
-//                        System.out.println("Formatted result: " + formattedResult);
+                        NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
+                        DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
+                        decimalFormat.applyPattern("#,##,###");
 
-                        emiValue.setText(String.valueOf(roundedEMIResult));
-                        totalInterestValue.setText(String.valueOf(roundedInterestResult));
-                        totalAmountValue.setText(String.valueOf(roundedTotalAmt));
+                        String formattedEmiResult = decimalFormat.format(roundedEMIResult);
+                        String formattedInterestResult = decimalFormat.format(roundedInterestResult);
+                        String formattedTotalAmt = decimalFormat.format(roundedTotalAmt);
+
+                        emiValue.setText(formattedEmiResult);
+                        totalInterestValue.setText(formattedInterestResult);
+                        totalAmountValue.setText(formattedTotalAmt);
 
 
                         loanOutputCardView.setVisibility(View.VISIBLE);
 
-                        Date currentDate=new Date();
+                        // Create a SimpleDateFormat object with the desired format
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm", Locale.getDefault());
+
+                        // Get the current date and time
+                        Date currentDate = new Date();
+
+                        // Format the date and time using the SimpleDateFormat object
+                        String formattedDate = simpleDateFormat.format(currentDate);
+
+
+
                         setValues();
                         setUpChart();
 
                         DBHandler dbHandler= new DBHandler(getContext());
                         LoanData loanData = new LoanData();
-                        loanData.setLoanActivityDate(String.valueOf(currentDate));
+                        loanData.setLoanActivityDate(formattedDate);
                         loanData.setLoanAmount(String.valueOf(loan));
                         loanData.setLoanRate(String.valueOf(interestRate));
                         loanData.setLoanTime(String.valueOf(numberOfInstallments));
@@ -355,12 +381,17 @@ public class LoanFragment extends Fragment {
         loanHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DBHandler dbHandler = new DBHandler(getContext());
-                dbHandler.fetchLoanData();
-
-                HistoryLoan historyLoan=new HistoryLoan();
-                historyLoan.setLoanValues();
+                Handler handler=new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Start the new activity after the delay
+                        Intent intent = new Intent(getContext(), HistoryLoan.class);
+                        startActivity(intent);
+                    }
+                }, 500);
             }
         });
     }
 }
+

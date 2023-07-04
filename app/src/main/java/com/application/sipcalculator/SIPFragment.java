@@ -2,13 +2,18 @@ package com.application.sipcalculator;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.utils.widget.ImageFilterButton;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,10 +32,12 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.slider.Slider;
 
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SIPFragment extends Fragment {
     //    private TextInputLayout investment,rate,time;
@@ -41,13 +48,14 @@ public class SIPFragment extends Fragment {
 
     private CardView outputCardView;
 
-    private Button calculateBtn,sipHistoryBtn;
+    private Button calculateBtn;
+    private ImageFilterButton sipHistoryBtn;
 
-    long roundedResult=0;
+    int roundedResult=0;
 
-    String investedAmount ="0.0";
+    int investedAmount =0;
 
-    long returnAmt;
+    int returnAmt;
 
     long profit=0;
 
@@ -77,7 +85,7 @@ public class SIPFragment extends Fragment {
         pieChart.invalidate();
     }
     private  void setValues(){
-        profit=roundedResult-Integer.parseInt(investedAmount);
+        profit=roundedResult-investedAmount;
         // Clear the existing entries in the pieEntryList
         pieEntryList.clear();
 
@@ -112,7 +120,9 @@ public class SIPFragment extends Fragment {
         rateSlider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                rateEdit.setText(String.valueOf(value));
+                DecimalFormat df = new DecimalFormat("#.##");
+                String formattedValue = df.format(value);
+                rateEdit.setText(formattedValue);
             }
         });
 
@@ -168,7 +178,7 @@ public class SIPFragment extends Fragment {
         });
 
 
-
+        rateEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         rateEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -180,11 +190,13 @@ public class SIPFragment extends Fragment {
                 String inputText = s.toString();
                 if (inputText != null && !inputText.isEmpty()) {
                     try {
+
                         // Create the value limit filter with desired limits
-                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 30);
+                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1.0f, 30.0f);
 
                         // Set the value limit filter as the filter for the EditText
                         rateEdit.setFilters(new InputFilter[]{valueLimitFilter});
+
 
                         float rateValue = Float.parseFloat(String.valueOf(s));
                         rateSlider.setValue(rateValue);
@@ -255,10 +267,13 @@ public class SIPFragment extends Fragment {
                 String input2=String.valueOf(rateEdit);
                 String input3=String.valueOf(timeEdit);
 
+
+
                 if (input1!=null && !input1.isEmpty() && input2!=null && !input2.isEmpty() && input3!=null && !input3.isEmpty() ) {
 
                     try {
-                        double investment = Double.parseDouble(investmentEdit.getText().toString());
+
+                        int investment = Integer.parseInt(investmentEdit.getText().toString());
                         double rate = Double.parseDouble(rateEdit.getText().toString());
                         int numberOfPeriods = Integer.parseInt(timeEdit.getText().toString());
 
@@ -275,21 +290,36 @@ public class SIPFragment extends Fragment {
                         double roundedValue = Double.parseDouble(formattedResult);
 
                         // Round off the roundedValue to the nearest whole number
-                        roundedResult = Math.round(roundedValue);
+                        roundedResult = (int) Math.round(roundedValue);
 
-                        double investedAmt = investment * numberOfPeriods;
+                        int investedAmt = investment * numberOfPeriods;
                         DecimalFormat iv = new DecimalFormat("#.##");
-                        investedAmount=iv.format(investedAmt);
+                        investedAmount= Integer.parseInt(iv.format(investedAmt));
 
-                        returnAmt=roundedResult-(long)investedAmt;
+                        returnAmt= roundedResult-investedAmt;
 
-                        totalReturnValue.setText(String.valueOf(roundedResult));
-                        totalInvestmentValue.setText(investedAmount);
-                        returnAmountValue.setText(String.valueOf(returnAmt));
+                        NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
+                        DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
+                        decimalFormat.applyPattern("#,##,###");
+
+
+                        String formattedTotalReturn = decimalFormat.format(roundedResult);
+                        String  formattedTotalInvestment=decimalFormat.format(investedAmount);
+                        String formattedReturnAmt=decimalFormat.format(returnAmt);
+
+                        totalReturnValue.setText(formattedTotalReturn);
+                        totalInvestmentValue.setText(formattedTotalInvestment);
+                        returnAmountValue.setText(formattedReturnAmt);
 
                         outputCardView.setVisibility(View.VISIBLE);
+                        // Create a SimpleDateFormat object with the desired format
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm", Locale.getDefault());
+
+                        // Get the current date and time
                         Date currentDate = new Date();
 
+                        // Format the date and time using the SimpleDateFormat object
+                        String formattedDate = simpleDateFormat.format(currentDate);
                         setValues();
                         setUpChart();
 
@@ -298,30 +328,36 @@ public class SIPFragment extends Fragment {
                         sipData.setSipInvestment(String.valueOf(investment));
                         sipData.setSipRate(String.valueOf(rate));
                         sipData.setSipTime(String.valueOf(numberOfPeriods));
-                        sipData.setSipActivityDate(String.valueOf(currentDate));
-                        sipData.setSipTotalInvestment(String.valueOf(totalInvestmentValue));
-                        sipData.setSipTotalReturn(String.valueOf(totalReturnValue));
-                        sipData.setSipReturnAmount(String.valueOf(returnAmountValue));
+                        sipData.setSipActivityDate(formattedDate);
+                        sipData.setSipTotalInvestment(String.valueOf(investedAmount));
+                        sipData.setSipTotalReturn(String.valueOf(roundedResult));
+                        sipData.setSipReturnAmount(String.valueOf(returnAmt));
 
                         dbHandler.addSIPHistory(sipData);
+
+
                     }
                     catch (NumberFormatException e){
                         Toast.makeText(getContext(), "Please enter values in all the fields", Toast.LENGTH_SHORT).show();
                     }
-
                 }
-
             }
         });
+
+
 
         sipHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DBHandler dbHandler = new DBHandler(getContext());
-                dbHandler.fetchSIPData();
-
-                HistorySIP historySIP=new HistorySIP();
-                historySIP.setSIPValues();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Start the new activity after the delay
+                        Intent intent = new Intent(getContext(), HistorySIP.class);
+                        startActivity(intent);
+                    }
+                }, 500);
             }
         });
     }
