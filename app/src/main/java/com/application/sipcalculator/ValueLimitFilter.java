@@ -1,12 +1,15 @@
 package com.application.sipcalculator;
 
+import android.content.Context;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.widget.Toast;
 
 public class ValueLimitFilter implements InputFilter {
 
     private float minValue;
     private float maxValue;
+
 
     public ValueLimitFilter(float minValue, float maxValue) {
         this.minValue = minValue;
@@ -23,7 +26,7 @@ public class ValueLimitFilter implements InputFilter {
             float input = Float.parseFloat(newValue);
 
             // Check if the new value is within the specified limits
-            if (input < minValue || input > maxValue) {
+            if (input <minValue || input > maxValue) {
                 return ""; // Invalid input, so discard the entered text
             }
         }

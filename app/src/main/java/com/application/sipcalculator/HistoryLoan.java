@@ -68,7 +68,7 @@ public class HistoryLoan extends AppCompatActivity {
         }
         else {
             while (cursor.moveToNext()) {
-                int loanAmt=cursor.getInt(cursor.getColumnIndex(Params.KEY_LOAN_ACTIVITY_DATE));
+                int loanAmt=cursor.getInt(cursor.getColumnIndex(Params.KEY_lOAN_AMOUNT));
                 NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
                 DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
                 decimalFormat.applyPattern("#,##,###");

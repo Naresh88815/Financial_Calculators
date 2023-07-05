@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,9 +60,17 @@ public class SIPFragment extends Fragment {
 
     long profit=0;
 
+    Slider slider;
+
     View view;
     PieChart pieChart;
     List <PieEntry> pieEntryList=new ArrayList<>();
+
+//    private void validateSlider(float value) {
+//        if (value == 0) {
+//            slider.setValue(1);
+//        }
+//    }
 
     private void setUpChart(){
         PieDataSet pieDataSet= new PieDataSet(pieEntryList, "");
@@ -73,7 +82,7 @@ public class SIPFragment extends Fragment {
 
        ArrayList<Integer>colors=new ArrayList<>();
 //       colors.add(Color.GRAY);
-       colors.add(Color.MAGENTA);
+       colors.add(ContextCompat.getColor(getContext(),R.color.Red));
        colors.add(ContextCompat.getColor(getContext(),R.color.app));
 
 
@@ -139,10 +148,10 @@ public class SIPFragment extends Fragment {
         investmentEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    investmentSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    investmentSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 investmentEdit.setSelection(investmentEdit.getText().length());
@@ -157,23 +166,26 @@ public class SIPFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int after, int count) {
                 String inputText = s.toString();
-                if (inputText != null && !inputText.isEmpty()) {
-                    try {
-                        // Create the value limit filter with desired limits
-                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 100000);
 
-                        // Set the value limit filter as the filter for the EditText
-                        investmentEdit.setFilters(new InputFilter[]{valueLimitFilter});
+                if (inputText != null && !inputText.isEmpty() && inputText!="0"){
+                        try {
+                            // Create the value limit filter with desired limits
+                            ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 100000);
 
-                        float investmentValue = Float.parseFloat(String.valueOf(s));
-                        investmentSlider.setValue(investmentValue);
+                            // Set the value limit filter as the filter for the EditText
+                            investmentEdit.setFilters(new InputFilter[]{valueLimitFilter});
 
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(getContext(), "Invalid input format", Toast.LENGTH_SHORT).show();
+                            float investmentValue = Float.parseFloat(String.valueOf(s));
+                            investmentSlider.setValue(investmentValue);
+
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getContext(), "Invalid input format", Toast.LENGTH_SHORT).show();
+                        }
                     }
+                else{
+                    investmentSlider.setValue(1);
                 }
-            }
-
+                }
 
         });
 
@@ -192,7 +204,7 @@ public class SIPFragment extends Fragment {
                     try {
 
                         // Create the value limit filter with desired limits
-                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1.0f, 30.0f);
+                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(0f, 30f);
 
                         // Set the value limit filter as the filter for the EditText
                         rateEdit.setFilters(new InputFilter[]{valueLimitFilter});
@@ -208,10 +220,10 @@ public class SIPFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    rateSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    rateSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 rateEdit.setSelection(rateEdit.getText().length());
@@ -228,7 +240,7 @@ public class SIPFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String inputText = s.toString();
-                if (inputText != null && !inputText.isEmpty()) {
+                if (inputText != null && !inputText.isEmpty() && inputText!="0") {
                     try {
                         // Create the value limit filter with desired limits
                         ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 600);
@@ -244,15 +256,18 @@ public class SIPFragment extends Fragment {
 
                     }
                 }
+                else {
+                    timeSlider.setValue(1);
+                }
             }
 
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    timeSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    timeSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 timeEdit.setSelection(timeEdit.getText().length());
@@ -313,7 +328,7 @@ public class SIPFragment extends Fragment {
 
                         outputCardView.setVisibility(View.VISIBLE);
                         // Create a SimpleDateFormat object with the desired format
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm", Locale.getDefault());
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMMM, yyyy h:mm", Locale.getDefault());
 
                         // Get the current date and time
                         Date currentDate = new Date();
@@ -366,8 +381,10 @@ public class SIPFragment extends Fragment {
         // Inflate the layout for this fragment
 //        View view = inflater.inflate(R.layout.fragment_sip, container, false);
         investmentEdit = view.findViewById(R.id.investmentEdit);
+//        investmentEdit.setText("0");
 
         investmentSlider = view.findViewById(R.id.investmentSlider);
+//        investmentSlider.setValue(1);
 
         rateEdit = view.findViewById(R.id.rateEdit);
 

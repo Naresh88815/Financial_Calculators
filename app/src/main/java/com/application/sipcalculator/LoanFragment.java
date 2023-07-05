@@ -75,7 +75,7 @@ public class LoanFragment extends Fragment {
 
         ArrayList<Integer>colors=new ArrayList<>();
 //       colors.add(Color.GRAY);
-        colors.add(Color.MAGENTA);
+        colors.add(ContextCompat.getColor(getContext(),R.color.Red));
         colors.add(ContextCompat.getColor(getContext(),R.color.app));
 
 
@@ -172,10 +172,10 @@ public class LoanFragment extends Fragment {
         loanEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    loanSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    loanSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 loanEdit.setSelection(loanEdit.getText().length());
@@ -190,7 +190,7 @@ public class LoanFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int after, int count) {
                 String inputText = s.toString();
-                if (inputText != null && !inputText.isEmpty()) {
+                if (inputText != null && !inputText.isEmpty() && inputText!="0") {
                     try {
                         // Create the value limit filter with desired limits
                         ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 5000000);
@@ -204,6 +204,9 @@ public class LoanFragment extends Fragment {
                     } catch (NumberFormatException e) {
                         Toast.makeText(getContext(), "Invalid input format", Toast.LENGTH_SHORT).show();
                     }
+                }
+                else {
+                    loanSlider.setValue(1);
                 }
             }
 
@@ -224,7 +227,7 @@ public class LoanFragment extends Fragment {
                 if (inputText != null && !inputText.isEmpty()) {
                     try {
                         // Create the value limit filter with desired limits
-                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 30);
+                        ValueLimitFilter valueLimitFilter = new ValueLimitFilter(0f, 30f);
 
                         // Set the value limit filter as the filter for the EditText
                         interestRateEdit.setFilters(new InputFilter[]{valueLimitFilter});
@@ -239,10 +242,10 @@ public class LoanFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    interestRateSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    interestRateSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 interestRateEdit.setSelection(interestRateEdit.getText().length());
@@ -259,7 +262,7 @@ public class LoanFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String inputText = s.toString();
-                if (inputText != null && !inputText.isEmpty()) {
+                if (inputText != null && !inputText.isEmpty() && inputText!="0") {
                     try {
                         // Create the value limit filter with desired limits
                         ValueLimitFilter valueLimitFilter = new ValueLimitFilter(1, 600);
@@ -274,15 +277,18 @@ public class LoanFragment extends Fragment {
                         Toast.makeText(getContext(), "Invalid input format", Toast.LENGTH_SHORT).show();
                     }
                 }
+                else {
+                    loanTimeSlider.setValue(1);
+                }
             }
 
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
-                    float value = Float.parseFloat(s.toString());
-                    loanTimeSlider.setValue(value);
-                }
+//                if (!s.toString().isEmpty()) {
+//                    float value = Float.parseFloat(s.toString());
+//                    loanTimeSlider.setValue(value);
+//                }
 
                 // Set the cursor position to the end of the text
                 loanTimeEdit.setSelection(loanTimeEdit.getText().length());
@@ -345,7 +351,7 @@ public class LoanFragment extends Fragment {
                         loanOutputCardView.setVisibility(View.VISIBLE);
 
                         // Create a SimpleDateFormat object with the desired format
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm", Locale.getDefault());
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMMM, yyyy h:mm", Locale.getDefault());
 
                         // Get the current date and time
                         Date currentDate = new Date();

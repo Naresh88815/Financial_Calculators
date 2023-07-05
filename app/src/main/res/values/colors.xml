@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#FFFFFFFF</color>
-    <color name="app">#191970</color>
-    <color name="Red">	#EE4B2B</color>
+    <color name="app">#2a0d9a</color>
+    <color name="Red">#de1738</color>
 </resources>

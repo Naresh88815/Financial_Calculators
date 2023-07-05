@@ -19,7 +19,7 @@ import java.util.Locale;
 
 public class HistorySIP extends AppCompatActivity {
     RecyclerView recyclerView;
-    ArrayList<String> sipActivityDate, sipInvestment, sipRate, sipTime,sipTotalInvestment, sipTotalReturn,  sipWealthGain;
+    ArrayList<String> sipActivityDate, sipInvestment, sipRate, sipTime,  sipWealthGain, sipTotalReturn,sipTotalInvestment;
     DBHandler dbHandler;
     HistorySIPAdapter historyAdapter;
 
